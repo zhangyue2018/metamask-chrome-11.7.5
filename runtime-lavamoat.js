@@ -6887,7 +6887,7 @@ const makeCausalConsole=  (baseConsole, loggedErrorHandler)=>  {
       // If there is no message log args, then just show the message that
       // the error itself carries.
       // eslint-disable-next-line @endo/no-polymorphic-call
-      baseConsole[severity]( `${errorTag}:`,error.message);
+    //   baseConsole[severity]( `${errorTag}:`,error.message);
      }else {
       // If there is one, we take it to be strictly more informative than the
       // message string carried by the error, so show it *instead*.
@@ -6909,7 +6909,7 @@ const makeCausalConsole=  (baseConsole, loggedErrorHandler)=>  {
       stackString+=  '\n';
      }
     // eslint-disable-next-line @endo/no-polymorphic-call
-    baseConsole[severity](stackString);
+    // baseConsole[severity](stackString);
     // Show the other annotations on error
     for( const noteLogArgs of noteLogArgsArray) {
       logErrorInfo(severity, error, ErrorInfo.NOTE, noteLogArgs, subErrors);
@@ -6926,7 +6926,7 @@ const makeCausalConsole=  (baseConsole, loggedErrorHandler)=>  {
       const subErrors=  [];
       const argTags=  extractErrorArgs(logArgs, subErrors);
       // eslint-disable-next-line @endo/no-polymorphic-call
-      baseConsole[level](...argTags);
+    //   baseConsole[level](...argTags);
       // @ts-expect-error ConsoleProp vs LogSeverity mismatch
       logSubErrors(level, subErrors);
      };
