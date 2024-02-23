@@ -2,40 +2,62 @@ console.log('this is zynotification.js, you can access extend app pag window in 
 let wsUrl = 'ws://127.0.0.1:9999';
 
 // 阻塞指定的时间--单位:ms
-window._trendx_delaySomeTime = async function(time) {
+async function _trendx_delaySomeTime(time) {
     await new Promise(function(resolve, reject) {
         setTimeout(resolve, time);
     });
 }
 
 // 点击确认按钮
-window._trendx_clickConfirm = function() {
+async function _trendx_clickConfirm() {
     var title = document.querySelector("#app-content > div > div > div > div.request-signature__body > h3");
+    var confirmButton = null;
     if(title.innerText === '签名请求') {
-        var confirmButton = document.querySelector("#app-content > div > div > div > div.page-container__footer > footer > button.button.btn--rounded.btn-primary.page-container__footer-button");
-        confirmButton.click();
+        do {
+            confirmButton = document.querySelector("#app-content > div > div > div > div.page-container__footer > footer > button.button.btn--rounded.btn-primary.page-container__footer-button");
+            await window._trendx_delaySomeTime(3000);
+        } while(!confirmButton);
+        return confirmButton;
     }
+    return null;
 }
 
-window.onload = function() {
+var zy_handleObj = {
+    _trendx_delaySomeTime,
+    _trendx_clickConfirm
+}
+
+function openWS() {
     let ws = new WebSocket(wsUrl);
     ws.onopen = function() {
+        // let origin = 'metamask_notification';
         let origin = 'extension_notification';
-        ws.send(JSON.stringify(origin));
+        ws.send(JSON.stringify({ origin }));
     }
 
     ws.onmessage = async function(event) {
         let data = event.data || '{}';
-        console.log('---ws---onmessage---data---', data);
         let res = JSON.parse(data);
-        if(res.action && window['_trendx_' + res.action]) {
-            await window._trendx_delaySomeTime(2000);
-
-            let to = 'webPage', action = 'clickConfirm_ok';
-            ws.send(JSON.stringify({ to, action }));
-            
-            window['_trendx_' + res.action]();
+        if(res.action === 'clickConfirm' && zy_handleObj['_trendx_' + res.action]) {
+            let confirmButton = await zy_handleObj['_trendx_' + res.action]();
+            if(confirmButton) {
+                const flag = res.params[0] || NaN;
+                let to = 'contentScript', action = 'response';
+                ws.send(JSON.stringify({ to, action, flag }));
+                ws.close();
+                confirmButton.click();
+            } else {
+                console.log('--contentScript---获取确认按钮失败---');
+            }
         }
     }
 }
+
+var intervalID = setInterval(() => {
+    var title = document.querySelector("#app-content > div > div > div > div.request-signature__body > h3");
+    if(title.innerText === '签名请求') {
+        openWS();
+        clearInterval(intervalID);
+    }
+}, 1000);
 
