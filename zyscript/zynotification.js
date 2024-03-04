@@ -83,16 +83,21 @@ function openWS() {
 
 window.onload = function() {
     intervalID = setInterval(() => {
-        var title = document.querySelector(signatureFilter);
-        if(title.innerText === '签名请求') {
-            openWS();
-            clearInterval(intervalID);
-            return;
-        }
-        var title1 = document.querySelector(loginFilter);
-        if(title1.innerText === '登录请求') {
-            openWS();
-            clearInterval(intervalID);
+        var title;
+        try {
+            title = document.querySelector(signatureFilter);
+            if(title && title.innerText === '签名请求') {
+                openWS();
+                clearInterval(intervalID);
+                return;
+            }
+            title = document.querySelector(loginFilter);
+            if(title && title.innerText === '登录请求') {
+                openWS();
+                clearInterval(intervalID);
+            }
+        }catch(e) {
+            console.log(e);
         }
     }, 1000);
 }
