@@ -70,8 +70,11 @@ function openWS() {
         if(res.action === 'confirmLogin') {
             let loginButton = await zy_handleObj._trendx_getLoginButton();
             if(loginButton) {
-                let to = 'contentScript', action = 'login_response';
-                ws.send(JSON.stringify({ to, action }));
+                let new_account = document.querySelector("#app-content div[class*=balance-header] div.box--display-flex.box--flex-direction-column.box--align-items-flex-start");
+                let account = new_account.lastChild;
+                let accountName = account.innerText || '';
+                let to = 'contentScript', action = 'login_response', params = [accountName];
+                ws.send(JSON.stringify({ to, action, params }));
                 ws.close();
                 loginButton.click();
             } else {
